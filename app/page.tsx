@@ -9,41 +9,53 @@ const Main = () => {
   const [PaystackPop, setPaystackPop] = useState<any>(null);
   const [email, setEmail] = useState<string>("");
 
-  let amount = 850000
+  let amount = 850000;
 
   const onCheckout = async () => {
     if (!PaystackPop) return;
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const res = await axios.post('/api/checkout', {
+      const paymentParams = {
         email,
-        amount
-      });
+        amount: amount * 100, 
+      };
+
+      const res = await axios.post(
+        "https://api.paystack.co/transaction/initialize",
+        paymentParams,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const reference = res.data.data.reference;
 
       const popup = new PaystackPop();
       popup.newTransaction({
         key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
-        email: email, 
+        email: email,
         amount: amount * 100,
-        reference: res.data.reference,
+        reference,
         onSuccess: async (tx: any) => {
-          console.log(tx)
-          alert(`payment successful: ${tx.message}`)
-          setIsLoading(false)
-          amount = 0
-          setEmail("")
+          console.log(tx);
+          alert(`Payment successful: ${tx.message}`);
+          setIsLoading(false);
+          amount = 0;
+          setEmail("");
         },
         onCancel: () => {
-          alert("cancelled") 
-          amount = 0
-          setEmail("")
-          setIsLoading(false)
+          alert("Payment cancelled");
+          amount = 0;
+          setEmail("");
+          setIsLoading(false);
         },
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      setEmail("")
-      setIsLoading(false)
+      setEmail("");
+      setIsLoading(false);
     }
   };
 
@@ -81,9 +93,8 @@ const Main = () => {
           />
         </div>
 
-
         <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-          Total Amount: ₦{amount} 
+          Total Amount: ₦{amount}
         </div>
       </div>
 
@@ -92,7 +103,7 @@ const Main = () => {
         disabled={loading || !email}
         className="w-full mt-6"
       >
-         {loading ? "Checking out..." : "Checkout"}
+        {loading ? "Checking out..." : "Checkout"}
       </button>
     </div>
   );
