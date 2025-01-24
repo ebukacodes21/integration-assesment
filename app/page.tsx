@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const Summary = () => {
+const Main = () => {
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const [loading, setIsLoading] = useState<boolean>(false);
   const [PaystackPop, setPaystackPop] = useState<any>(null);
@@ -95,4 +95,4 @@ const Summary = () => {
   );
 };
 
-export default Summary;
+export default Main;
